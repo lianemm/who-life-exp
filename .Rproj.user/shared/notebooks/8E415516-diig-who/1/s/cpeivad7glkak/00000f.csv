@@ -1,0 +1,14 @@
+"0","life_exp |>"
+"0","  ggplot(aes(x = percentage_expenditure, y = Life_expectancy)) +"
+"0","  geom_point(alpha = 0.5) +"
+"0","  geom_smooth() + "
+"0","  facet_wrap(~Status)"
+"1","[38;5;232m`geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = ""cs"")'[39m
+"
+"2","Warning:"
+"2"," [38;5;232mRemoved 10 rows containing non-finite outside the scale range (`stat_smooth()`).[39m
+"
+"2","Warning:"
+"2"," [38;5;232mRemoved 10 rows containing missing values or values outside the scale range
+(`geom_point()`).[39m
+"

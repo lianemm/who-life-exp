@@ -23,6 +23,17 @@ colnames(life_exp)
 ## Exploratory Data Analysis (Univariate & Bivariate)
 
 ```{r}
+life_exp |>
+  ggplot(aes(x = Life_expectancy))+
+  geom_histogram(binwidth = 2) + 
+  labs(
+    title = "Distribution of Life Expectancy",
+    y = "Count",
+    x = "Life Expectancy (years)"
+  )
+```
+
+```{r}
 #Life Exp vs. Status
 
 life_exp |>
@@ -35,5 +46,76 @@ life_exp |>
 #Life Exp vs. Alcohol 
 life_exp |>
   ggplot(aes(x = Alcohol, y = Life_expectancy)) + 
+  geom_point(alpha = 0.5) +
+  facet_wrap(~Status)
+```
+
+```{r}
+life_exp |>
+  ggplot(aes(x = percentage_expenditure, y = Life_expectancy)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth() + 
+  facet_wrap(~Status)
+```
+
+```{r}
+life_exp |>
+  ggplot(aes(x = Total_expenditure, y = Life_expectancy)) + 
   geom_point()
+```
+
+Exploring Other Life Expectancy-adj Response Variables
+
+```{r}
+life_exp |>
+  ggplot(aes(x = Status, y = infant_deaths)) +
+  geom_boxplot()
+```
+
+## Model for Life Expectancy
+
+```{r}
+model_le <- lm(Life_expectancy ~ Total_expenditure + percentage_expenditure + Status + Population + GDP + Schooling + Alcohol, data = life_exp)
+anova(model_le)
+```
+
+Checking for Multicollinearity:
+
+```{r}
+library(car)
+vif(model_le)
+```
+
+Multicollinearity in percentage_expenditure and GDP - removing them
+
+```{r}
+model_le2 <- lm(Life_expectancy ~ Total_expenditure + Status + GDP + Schooling + Alcohol, data = life_exp)
+anova(model_le2)
+vif(model_le2)
+```
+
+VIF and GVIFs are all below 10, suggesting no multicollinearity with this model.
+
+## Predicting/Forecasting Life Expectancy 
+
+```{r}
+model_yr <- lm(Life_expectancy ~ Year, data = life_exp)
+summary(model_yr)
+```
+
+## Correlation Analysis
+
+```{r}
+cor_matrix <- cor(life_exp[, c("Life_expectancy", "GDP", "percentage_expenditure", "Adult_Mortality", "infant_deaths", "Hepatitis_B", "HIV/AIDS", "Measles", "Diphtheria", "BMI", "Schooling")], use = "complete.obs")
+
+library(reshape2)
+
+# Melt the correlation matrix for ggplot
+melted_cor <- melt(cor_matrix)
+ggplot(melted_cor, aes(Var1, Var2, fill = value)) +
+  geom_tile() + 
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
 ```

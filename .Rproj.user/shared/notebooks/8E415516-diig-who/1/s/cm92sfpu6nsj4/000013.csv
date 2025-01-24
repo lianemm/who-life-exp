@@ -1,0 +1,20 @@
+"0","cor_matrix <- cor(life_exp[, c(""Life_expectancy"", ""GDP"", ""percentage_expenditure"", ""Adult_Mortality"", ""infant_deaths"", ""Hepatitis_B"", ""HIV/AIDS"", ""Measles"", ""Diphtheria"", ""BMI"", ""Schooling"")], use = ""complete.obs"")"
+"0",""
+"0","library(reshape2)"
+"2","
+Attaching package: ‘reshape2’
+
+"
+"2","The following object is masked from ‘package:tidyr’:
+
+    smiths
+
+"
+"0","# Melt the correlation matrix for ggplot"
+"0","melted_cor <- melt(cor_matrix)"
+"0","ggplot(melted_cor, aes(Var1, Var2, fill = value)) +"
+"0","  geom_tile() + "
+"0","  scale_fill_gradient2(low = ""blue"", high = ""red"", mid = ""white"", midpoint = 0) +"
+"0","  theme_minimal() + "
+"0","  theme(axis.text.x = element_text(angle = 45, hjust = 1))"
+"0",""

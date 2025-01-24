@@ -1,8 +1,0 @@
-"0","#Life Exp vs. Alcohol "
-"0","life_exp |>"
-"0","  ggplot(aes(x = Alcohol, y = Life_expectancy)) + "
-"0","  geom_point()"
-"2","Warning:"
-"2"," [38;5;232mRemoved 203 rows containing missing values or
-values outside the scale range (`geom_point()`).[39m
-"

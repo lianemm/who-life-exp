@@ -1,0 +1,3 @@
+"0","life_exp |>"
+"0","  ggplot(aes(x = Status, y = infant_deaths)) +"
+"0","  geom_boxplot()"
