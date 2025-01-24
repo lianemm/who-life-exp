@@ -33,4 +33,7 @@ life_exp |>
 
 ```{r}
 #Life Exp vs. Alcohol 
+life_exp |>
+  ggplot(aes(x = Alcohol, y = Life_expectancy)) + 
+  geom_point()
 ```
