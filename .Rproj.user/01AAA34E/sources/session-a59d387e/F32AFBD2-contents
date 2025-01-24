@@ -1,0 +1,36 @@
+---
+title: "diig-who"
+---
+
+## Life Expectancy Dataset - DIIG Data Round 1
+
+```{r}
+library(tidyverse)
+library(dplyr)
+life_exp <- read_csv("data/Life Expectancy Data.csv")
+```
+
+Cleaning data
+
+```{r}
+colnames(life_exp) <- gsub(" ", "_", colnames(life_exp))
+colnames(life_exp) <- gsub("-", "_", colnames(life_exp))
+colnames(life_exp) <- gsub("__", "_", colnames(life_exp))
+colnames(life_exp)
+
+```
+
+## Exploratory Data Analysis (Univariate & Bivariate)
+
+```{r}
+#Life Exp vs. Status
+
+life_exp |>
+  ggplot(aes(x = Status, y = Life_expectancy)) + 
+  geom_boxplot()
+
+```
+
+```{r}
+#Life Exp vs. Alcohol 
+```
