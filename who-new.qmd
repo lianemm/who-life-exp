@@ -1,0 +1,74 @@
+---
+title: "who-new"
+format: html
+---
+
+## Log. Reg Model
+
+Created life expectancy classification based on global averages:
+
+Low: \<60 yrs
+
+Medium: 60-80 yrs
+
+High: \>80
+
+```{r}
+library(dplyr)
+
+life_exp_clean <- life_exp_clean |>
+  mutate(life_exp_lvl = case_when(
+    Life_expectancy < 60 ~ "Low",
+    Life_expectancy >= 60 & Life_expectancy < 70 ~ "Medium",
+    Life_expectancy >= 70 & Life_expectancy < 80 ~ "High",
+    Life_expectancy >= 80 ~ "Very High"
+  ))
+
+life_exp_clean
+
+```
+
+To model the relationship between life expectancy level and different factors, logistic regression was the best choice:
+
+```{r}
+library(knitr)
+library(nnet)
+life_model <- multinom(life_exp_lvl ~ GDP + Population + Alcohol + percentage_expenditure + infant_deaths + Hepatitis_B + BMI + Polio + Diphtheria + thinness_1_19_years + Income_composition_of_resources + Schooling + thinness_5_9_years + Measles, data = life_exp_clean)
+summary(life_model)
+# Extract coefficients and standard errors from the model
+coef_summary <- summary(life_model)$coefficients
+se_summary <- summary(life_model)$standard.errors
+
+# Calculate z-values (coefficients / standard errors)
+z_values <- coef_summary / se_summary
+
+# Calculate p-values using the normal distribution (two-tailed)
+p_values <- 2 * (1 - pnorm(abs(z_values)))
+
+# Display the p-values
+data.frame(P_values = p_values)
+
+
+```
+
+all predictors were considered significant, with p-values close to 0.
+
+```{r}
+# Install and load the pROC package
+install.packages("pROC")
+library(pROC)
+
+# Predicted probabilities
+pred_probs <- predict(life_model, type = "probs")
+
+# Actual class labels (you'll need to use the appropriate variable, e.g., 'life_exp_lvl')
+actual <- life_exp_clean$life_exp_lvl
+
+# Calculate multiclass AUC using one-vs-rest
+roc_obj <- multiclass.roc(actual, pred_probs)
+
+# Display AUC
+auc_value <- roc_obj$auc
+print(auc_value)
+
+```

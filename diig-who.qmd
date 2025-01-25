@@ -18,12 +18,15 @@ colnames(life_exp) <- gsub("-", "_", colnames(life_exp))
 colnames(life_exp) <- gsub("__", "_", colnames(life_exp))
 colnames(life_exp)
 
+life_exp_clean <- na.omit(life_exp)
+
+
 ```
 
 ## Exploratory Data Analysis (Univariate & Bivariate)
 
 ```{r}
-life_exp |>
+life_exp_clean |>
   ggplot(aes(x = Life_expectancy))+
   geom_histogram(binwidth = 2) + 
   labs(
@@ -36,7 +39,7 @@ life_exp |>
 ```{r}
 #Life Exp vs. Status
 
-life_exp |>
+life_exp_clean |>
   ggplot(aes(x = Status, y = Life_expectancy)) + 
   geom_boxplot()
 
@@ -44,14 +47,14 @@ life_exp |>
 
 ```{r}
 #Life Exp vs. Alcohol 
-life_exp |>
+life_exp_clean |>
   ggplot(aes(x = Alcohol, y = Life_expectancy)) + 
   geom_point(alpha = 0.5) +
   facet_wrap(~Status)
 ```
 
 ```{r}
-life_exp |>
+life_exp_clean |>
   ggplot(aes(x = percentage_expenditure, y = Life_expectancy)) +
   geom_point(alpha = 0.5) +
   geom_smooth() + 
@@ -59,7 +62,7 @@ life_exp |>
 ```
 
 ```{r}
-life_exp |>
+life_exp_clean |>
   ggplot(aes(x = Total_expenditure, y = Life_expectancy)) + 
   geom_point()
 ```
@@ -67,7 +70,7 @@ life_exp |>
 Exploring Other Life Expectancy-adj Response Variables
 
 ```{r}
-life_exp |>
+life_exp_clean |>
   ggplot(aes(x = Status, y = infant_deaths)) +
   geom_boxplot()
 ```
@@ -75,7 +78,7 @@ life_exp |>
 ## Model for Life Expectancy
 
 ```{r}
-model_le <- lm(Life_expectancy ~ Total_expenditure + percentage_expenditure + Status + Population + GDP + Schooling + Alcohol, data = life_exp)
+model_le <- lm(Life_expectancy ~ Total_expenditure + percentage_expenditure + Status + Population + GDP + Schooling + Alcohol, data = life_exp_clean)
 anova(model_le)
 ```
 
@@ -89,18 +92,86 @@ vif(model_le)
 Multicollinearity in percentage_expenditure and GDP - removing them
 
 ```{r}
-model_le2 <- lm(Life_expectancy ~ Total_expenditure + Status + GDP + Schooling + Alcohol, data = life_exp)
+library(knitr)
+model_le2 <- lm(Life_expectancy ~ Total_expenditure + Status + GDP + Schooling + Alcohol, data = life_exp_clean)
 anova(model_le2)
 vif(model_le2)
+summary(model_le2)
 ```
 
 VIF and GVIFs are all below 10, suggesting no multicollinearity with this model.
 
-## Predicting/Forecasting Life Expectancy 
+$$
+Life\_expectancy = equation
+$$
+
+## Predicting/Forecasting Life Expectancy
 
 ```{r}
-model_yr <- lm(Life_expectancy ~ Year, data = life_exp)
+model_yr <- lm(Life_expectancy ~ Year, data = life_exp_clean)
 summary(model_yr)
+```
+
+low R\^2 value of 0.002891 suggests this may not be a great model; only explains 2% of the variability. Therefore:
+
+#### Arima Time-Series Analysis
+
+```{r}
+library(forecast)
+library(tseries)
+
+# Subset the relevant columns (Year and Life_expectancy)
+life_exp_ts <- ts(life_exp_clean$Life_expectancy, start = c(2000), frequency = 1)
+adf.test(life_exp_ts)
+
+```
+
+time series is stationary; can proceed with time-series modelling of Arima.
+
+```{r}
+model_arima <- auto.arima(life_exp_ts)
+summary(model_arima)
+
+```
+
+```{r}
+forecast_arima <- forecast(model_arima, h = 20)  # h = 10 is the number of time steps to forecast
+# plot(forecast_arima)
+# time(forecast_arima)
+
+# Create a data frame to include both actual and forecasted data
+# Assuming you have a time series object 'life_exp_ts' and the forecast model 'forecast_developed'
+
+# Create a vector of years corresponding to the time series
+years <- seq(2000, 2000 + length(life_exp_ts) - 1)
+
+# Create a data frame to include both actual and forecasted data
+forecast_df <- data.frame(
+  Year = c(years, years[length(years)] + 1: length(forecast_arima$mean)),  # Adjust forecast years
+  Value = c(life_exp_ts, forecast_arima$mean),
+  Type = c(rep("Actual", length(life_exp_ts)), rep("Forecast", length(forecast_arima$mean)))
+)
+
+# Plot using ggplot2
+library(ggplot2)
+ggplot(forecast_df, aes(x = Year, y = Value, color = Type)) +
+  geom_line() +
+  scale_x_continuous(
+    breaks = seq(2000, 2000 + length(life_exp_ts) + length(forecast_arima$mean) - 1, by = 10)  # Show labels every 10 years
+  ) +
+  labs(title = "ARIMA Forecast for Life Expectancy", x = "Year", y = "Life Expectancy") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)  # Rotate x-axis labels by 45 degrees for readability
+  )
+
+
+
+
+```
+
+```{r}
+checkresiduals(model_arima)
+
 ```
 
 ## Correlation Analysis
@@ -117,5 +188,21 @@ ggplot(melted_cor, aes(Var1, Var2, fill = value)) +
   scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0) +
   theme_minimal() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r}
+developed_countries <- subset(life_exp, Status == "Developed")
+developing_countries <- subset(life_exp, Status == "Developing")
+
+# Correlations for developed countries
+cor_developed <- cor(developed_countries[, c("Life_expectancy",  "percentage_expenditure", "Adult_Mortality", "Hepatitis_B")], use = "complete.obs")
+
+# Correlations for developing countries
+cor_developing <- cor(developing_countries[, c("Life_expectancy",  "percentage_expenditure", "Adult_Mortality", "Hepatitis_B")], use = "complete.obs")
+
+
+print(cor_developed)
+print(cor_developing)
 
 ```
