@@ -1,6 +1,7 @@
 ---
-title: "diig-fin"
-output: html_document
+title: "DIIG Data Challenge 2025"
+author: "Liane Ma"
+output: pdf_document
 date: "2025-01-25"
 ---
 
@@ -8,9 +9,7 @@ date: "2025-01-25"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# DIIG Data Challenge 2025: Life Expectancy Dataset
-
-### Liane Ma
+# Factors that Impact Life Expectancy: Prioritizing WHO Efforts
 
 ## Data
 
@@ -102,22 +101,30 @@ life_exp_clean |>
 
 ```{r}
 correlations <- cor(life_exp_clean[, c("Adult_Mortality", "infant_deaths", "Alcohol", 
-                                       "percentage_expenditure", "Hepatitis_B", "Measles", 
-                                       "BMI", "under_five_deaths", "Polio", "Total_expenditure", 
-                                       "Diphtheria", "HIV/AIDS", "GDP", "Population", 
-                                       "thinness_1_19_years", "thinness_5_9_years", 
-                                       "Income_composition_of_resources", "Schooling")], 
+                                       "percentage_expenditure", "Hepatitis_B", 
+                                       "Measles", "BMI", "under_five_deaths", 
+                                       "Polio", "Total_expenditure", 
+                                       "Diphtheria", "HIV/AIDS", "GDP", 
+                                       "Population","thinness_1_19_years", 
+                                       "thinness_5_9_years", 
+                                       "Income_composition_of_resources", 
+                                       "Schooling")], 
                     life_exp_clean$Life_expectancy)
 
 correlations_named <- setNames(correlations, 
                                c("Adult_Mortality", "infant_deaths", "Alcohol", 
-                                 "percentage_expenditure", "Hepatitis_B", "Measles", 
-                                 "BMI", "under_five_deaths", "Polio", "Total_expenditure", 
-                                 "Diphtheria", "HIV/AIDS", "GDP", "Population", 
-                                 "thinness_1_19_years", "thinness_5_9_years", 
-                                 "Income_composition_of_resources", "Schooling"))
+                                       "percentage_expenditure", "Hepatitis_B", 
+                                       "Measles", "BMI", "under_five_deaths", 
+                                       "Polio", "Total_expenditure", 
+                                       "Diphtheria", "HIV/AIDS", "GDP", 
+                                       "Population","thinness_1_19_years", 
+                                       "thinness_5_9_years", 
+                                       "Income_composition_of_resources", 
+                                       "Schooling"))
 
-correlations_tbl <- enframe(correlations_named, name = "Variable", value = "Correlation") %>%
+correlations_tbl <- enframe(correlations_named, 
+                            name = "Variable", 
+                            value = "Correlation") |>
   arrange(desc(Correlation))
 
 positive_corr <- correlations_tbl |> filter(Correlation > 0)
@@ -141,52 +148,75 @@ weak_corr
 developed <- life_exp_clean |> filter(Status == "Developed")
 developing <- life_exp_clean |> filter(Status == "Developing")
 
-correlations_dev <- cor(developed[, c("Adult_Mortality", "infant_deaths", "Alcohol", 
-                                      "percentage_expenditure", "Hepatitis_B", "Measles", 
-                                      "BMI", "under_five_deaths", "Polio", "Total_expenditure",                                       "Diphtheria", "HIV/AIDS", "GDP", "Population", 
-                                      "thinness_1_19_years", "thinness_5_9_years", 
-                                      "Income_composition_of_resources", "Schooling")], 
+correlations_dev <- cor(developed[, c("Adult_Mortality", "infant_deaths", 
+                                      "Alcohol", "percentage_expenditure", 
+                                      "Hepatitis_B", "Measles", "BMI", 
+                                      "under_five_deaths", "Polio", 
+                                      "Total_expenditure","Diphtheria", 
+                                      "HIV/AIDS", "GDP", "Population", 
+                                      "thinness_1_19_years", 
+                                      "thinness_5_9_years", 
+                                      "Income_composition_of_resources", 
+                                      "Schooling")], 
                        developed$Life_expectancy)
 
-correlations_devp <- cor(developing[, c("Adult_Mortality", "infant_deaths", "Alcohol", 
-                                        "percentage_expenditure", "Hepatitis_B", "Measles", 
-                                        "BMI", "under_five_deaths", "Polio", "Total_expenditure", 
-                                        "Diphtheria", "HIV/AIDS", "GDP", "Population", 
-                                        "thinness_1_19_years", "thinness_5_9_years", 
-                                        "Income_composition_of_resources", "Schooling")], 
+correlations_devp <- cor(developing[, c("Adult_Mortality", "infant_deaths", 
+                                      "Alcohol", "percentage_expenditure", 
+                                      "Hepatitis_B", "Measles", "BMI", 
+                                      "under_five_deaths", "Polio", 
+                                      "Total_expenditure","Diphtheria", 
+                                      "HIV/AIDS", "GDP", "Population", 
+                                      "thinness_1_19_years", 
+                                      "thinness_5_9_years", 
+                                      "Income_composition_of_resources", 
+                                      "Schooling")], 
                          developing$Life_expectancy)
 
 correlations_named_dev <- setNames(correlations_dev, 
-                                   c("Adult_Mortality", "infant_deaths", "Alcohol", 
-                                     "percentage_expenditure", "Hepatitis_B", "Measles", 
-                                     "BMI", "under_five_deaths", "Polio", "Total_expenditure", 
-                                     "Diphtheria", "HIV/AIDS", "GDP", "Population", 
-                                     "thinness_1_19_years", "thinness_5_9_years", 
-                                     "Income_composition_of_resources", "Schooling"))
+                                   c("Adult_Mortality", "infant_deaths", 
+                                      "Alcohol", "percentage_expenditure", 
+                                      "Hepatitis_B", "Measles", "BMI", 
+                                      "under_five_deaths", "Polio", 
+                                      "Total_expenditure","Diphtheria", 
+                                      "HIV/AIDS", "GDP", "Population", 
+                                      "thinness_1_19_years", 
+                                      "thinness_5_9_years", 
+                                      "Income_composition_of_resources", 
+                                      "Schooling"))
 
 correlations_named_devp <- setNames(correlations_devp, 
-                                    c("Adult_Mortality", "infant_deaths", "Alcohol", 
-                                      "percentage_expenditure", "Hepatitis_B", "Measles", 
-                                      "BMI", "under_five_deaths", "Polio", "Total_expenditure", 
-                                      "Diphtheria", "HIV/AIDS", "GDP", "Population", 
-                                      "thinness_1_19_years", "thinness_5_9_years", 
-                                      "Income_composition_of_resources", "Schooling"))
+                                    c("Adult_Mortality", "infant_deaths", 
+                                      "Alcohol", "percentage_expenditure", 
+                                      "Hepatitis_B", "Measles", "BMI", 
+                                      "under_five_deaths", "Polio", 
+                                      "Total_expenditure","Diphtheria", 
+                                      "HIV/AIDS", "GDP", "Population", 
+                                      "thinness_1_19_years", 
+                                      "thinness_5_9_years", 
+                                      "Income_composition_of_resources", 
+                                      "Schooling"))
 
-correlations_tbl_dev <- enframe(correlations_named_dev, name = "Variable", value = "Correlation_Developed") %>%
+correlations_tbl_dev <- enframe(correlations_named_dev, 
+                                name = "Variable", 
+                                value = "Correlation_Developed") |>
   arrange(desc(Correlation_Developed))
 
-correlations_tbl_devp <- enframe(correlations_named_devp, name = "Variable", value = "Correlation_Developing") %>%
+correlations_tbl_devp <- enframe(correlations_named_devp, 
+                                 name = "Variable", 
+                                 value = "Correlation_Developing") |>
   arrange(desc(Correlation_Developing))
 correlations_tbl_dev
 correlations_tbl_devp
 
 
-correlation_comparison <- left_join(correlations_tbl_dev, correlations_tbl_devp, by = "Variable")
+correlation_comparison <- left_join(correlations_tbl_dev, correlations_tbl_devp, 
+                                    by = "Variable")
 
 
 
-cat("\n--- Comparison of Correlations with Life Expectancy: Developed vs Developing Countries ---\n")
-print(correlation_comparison)
+cat("Comparison of Correlations with Life Expectancy: 
+    Developed vs Developing Countries")
+correlation_comparison
 
 ```
 
@@ -200,14 +230,16 @@ Interestingly, total-expenditure had a week correlation in developing countries,
 
 ```{r}
 #developed
-model_developed <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
-                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources, 
-                      data = developed)
+model_developed <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + 
+                        Adult_Mortality + infant_deaths + Polio + 
+                        Total_expenditure + Diphtheria + 
+                        Income_composition_of_resources, data = developed)
 
 #developing
-model_developing <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
-                         infant_deaths + Polio + Total_expenditure + Diphtheria + 
-                         Income_composition_of_resources, 
+model_developing <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + 
+                        Adult_Mortality + infant_deaths + Polio + 
+                        Total_expenditure + Diphtheria + 
+                        Income_composition_of_resources, 
                        data = developing)
 
 summary(model_developed)
@@ -216,14 +248,18 @@ summary(model_developed)
 summary(model_developing)
 ```
 
-#### Testing Interaction Effects of Interest
+#### Testing Interaction Effects of Interest with Drop-in Deviance Tests
 
 ```{r}
-model_dev_int <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
-                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + GDP*Schooling, 
+model_dev_int <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + 
+                      Adult_Mortality + infant_deaths + Polio + 
+                      Total_expenditure + Diphtheria + 
+                      Income_composition_of_resources + GDP*Schooling, 
                       data = developed)
-model_dvl_int <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
-                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + GDP*Schooling, 
+model_dvl_int <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + 
+                      Adult_Mortality + infant_deaths + Polio + 
+                      Total_expenditure + Diphtheria + 
+                      Income_composition_of_resources + GDP*Schooling, 
                       data = developing)
 anova(model_developed, model_dev_int)
 anova(model_developing, model_dvl_int)
@@ -233,11 +269,17 @@ anova(model_developing, model_dvl_int)
 Interaction effect of GDP and Schooling does not significantly improve model fit in either model; pval \> 0.05.
 
 ```{r}
-model_dev_int2 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
-                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + Income_composition_of_resources*Schooling, 
+model_dev_int2 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + 
+                       Adult_Mortality + infant_deaths + Polio + 
+                       Total_expenditure + Diphtheria + 
+                       Income_composition_of_resources + 
+                       Income_composition_of_resources*Schooling, 
                       data = developed)
-model_dvl_int2 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
-                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + Income_composition_of_resources*Schooling, 
+model_dvl_int2 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + 
+                       Adult_Mortality + infant_deaths + Polio + 
+                       Total_expenditure + Diphtheria + 
+                       Income_composition_of_resources + 
+                       Income_composition_of_resources*Schooling, 
                       data = developing)
 anova(model_developed, model_dev_int2)
 anova(model_developing, model_dvl_int2)
@@ -249,11 +291,15 @@ Interaction effect of Income Composition Index and Schooling does not significan
 Interested in lifestyle:
 
 ```{r}
-model_dev_int3 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
-                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + BMI*Alcohol, 
+model_dev_int3 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + 
+                       Adult_Mortality + infant_deaths + Polio + 
+                       Total_expenditure + Diphtheria + 
+                       Income_composition_of_resources + BMI*Alcohol, 
                       data = developed)
-model_dvl_int3 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
-                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + BMI*Alcohol, 
+model_dvl_int3 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + 
+                       Adult_Mortality + infant_deaths + Polio + 
+                       Total_expenditure + Diphtheria + 
+                       Income_composition_of_resources + BMI*Alcohol, 
                       data = developing)
 anova(model_developed, model_dev_int3)
 anova(model_developing, model_dvl_int3)
@@ -279,7 +325,8 @@ developing |>
 ```
 
 ```{r}
-developing$predicted_life_expectancy <- predict(model_dvl_int3, newdata = developing)
+developing$predicted_life_expectancy <- predict(model_dvl_int3, 
+                                                newdata = developing)
 
 ggplot(developing, aes(x = Alcohol, y = predicted_life_expectancy, color = BMI)) +
   geom_point() + 
@@ -290,11 +337,15 @@ ggplot(developing, aes(x = Alcohol, y = predicted_life_expectancy, color = BMI))
 ```
 
 ```{r}
-model_dev_int4 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
-                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + Total_expenditure*Polio, 
+model_dev_int4 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + 
+                       Adult_Mortality + infant_deaths + Polio + 
+                       Total_expenditure + Diphtheria + 
+                       Income_composition_of_resources + Total_expenditure*Polio, 
                       data = developed)
-model_dvl_int4 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
-                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + Total_expenditure*Polio, 
+model_dvl_int4 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + 
+                       Adult_Mortality + infant_deaths + Polio + 
+                       Total_expenditure + Diphtheria + 
+                       Income_composition_of_resources + Total_expenditure*Polio, 
                       data = developing)
 anova(model_developed, model_dev_int4)
 anova(model_developing, model_dvl_int4)
@@ -400,9 +451,8 @@ Additional limitations include omission of NAs from dataset, which may lead to d
 
 -   **Inclusion of fixed effects** (year-level) in linear regression to control for time-invariant characteristics that could affect the relationship between the variables
 
-```{=html}
 <!-- -->
-```
+
 -   Comparison between results with NAs and without NAs
 
 -   **Time-Series Analysis** w/ ARIMA to determine if there are any trends over time
