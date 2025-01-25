@@ -64,7 +64,7 @@ life_exp_clean |>
   facet_wrap(~Status)
 ```
 
-## Methodology 
+## Methodology
 
 Correlation Analysis:
 
@@ -205,3 +205,101 @@ developed;
 -   Schooling, Adult mortality, diphtheria, income comp significant
 
 developing: GDP, Schooling, BMI, Alcohol, Adult mortality, diphtheria, income comp are all signficant
+
+Interaction Effects
+
+-   GDP and schooling
+
+```{r}
+model_dev_int <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
+                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + GDP*Schooling, 
+                      data = developed)
+model_dvl_int <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
+                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + GDP*Schooling, 
+                      data = developing)
+anova(model_developed, model_dev_int)
+anova(model_developing, model_dvl_int)
+
+```
+
+interaction effect does not significantly improve model fit in either case; pval \>= 0.05.
+
+incomecomp \*schooling
+
+```{r}
+model_dev_int2 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
+                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + Income_composition_of_resources*Schooling, 
+                      data = developed)
+model_dvl_int2 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
+                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + Income_composition_of_resources*Schooling, 
+                      data = developing)
+anova(model_developed, model_dev_int2)
+anova(model_developing, model_dvl_int2)
+
+```
+
+interaction effect does not improve model.
+
+health and lifestyle: BMI \* Alcohol?
+
+```{r}
+model_dev_int3 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
+                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + BMI*Alcohol, 
+                      data = developed)
+model_dvl_int3 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
+                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + BMI*Alcohol, 
+                      data = developing)
+anova(model_developed, model_dev_int3)
+anova(model_developing, model_dvl_int3)
+summary(model_developing)$r.squared
+summary(model_dvl_int3)$r.squared
+```
+
+not significant in developed countries, but interaction is sig in developing countries w a pval of 0.02.
+
+-   this suggests that the relationship between **alcohol consumption** and **BMI** in relation to **life expectancy** might differ between developed and developing countries.
+
+-   r\^2 increased by a bit, indicating better model fit
+
+\
+GDP, total expenditure
+
+```{r}
+model_dev_int4 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
+                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + Total_expenditure*Polio, 
+                      data = developed)
+model_dvl_int4 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
+                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + Total_expenditure*Polio, 
+                      data = developing)
+anova(model_developed, model_dev_int4)
+anova(model_developing, model_dvl_int4)
+```
+
+```{r}
+# install.packages("car")
+library(car)
+vif(model_dvl_int3)
+```
+
+None have VIF \> 10, so multicollinearity is not an issue with this model
+
+Alcohol and BMI relationship in developing countries
+
+```{r}
+developing |>
+  ggplot(aes(x = Alcohol, y = log(BMI))) +
+  geom_point(alpha = 0.7) + 
+  geom_smooth()
+```
+
+```{r}
+developing$predicted_life_expectancy <- predict(model_dvl_int3, newdata = developing)
+
+library(ggplot2)
+ggplot(developing, aes(x = Alcohol, y = predicted_life_expectancy, color = BMI)) +
+  geom_point() + 
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Interaction Effect: Alcohol and BMI on Life Expectancy",
+       x = "Alcohol Consumption", y = "Predicted Life Expectancy")
+
+```
