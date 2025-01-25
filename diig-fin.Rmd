@@ -17,6 +17,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r load data}
 library(tidyverse)
 library(dplyr)
+library(tibble)
+
 life_exp <- read_csv("data/Life Expectancy Data.csv")
 
 #cleaning
@@ -61,3 +63,145 @@ life_exp_clean |>
   geom_smooth() + 
   facet_wrap(~Status)
 ```
+
+## Methodology 
+
+Correlation Analysis:
+
+```{r}
+correlations <- cor(life_exp_clean[, c("Adult_Mortality", "infant_deaths", "Alcohol", 
+                                       "percentage_expenditure", "Hepatitis_B", "Measles", 
+                                       "BMI", "under_five_deaths", "Polio", "Total_expenditure", 
+                                       "Diphtheria", "HIV/AIDS", "GDP", "Population", 
+                                       "thinness_1_19_years", "thinness_5_9_years", 
+                                       "Income_composition_of_resources", "Schooling")], 
+                    life_exp_clean$Life_expectancy)
+
+correlations_named <- setNames(correlations, 
+                               c("Adult_Mortality", "infant_deaths", "Alcohol", 
+                                 "percentage_expenditure", "Hepatitis_B", "Measles", 
+                                 "BMI", "under_five_deaths", "Polio", "Total_expenditure", 
+                                 "Diphtheria", "HIV/AIDS", "GDP", "Population", 
+                                 "thinness_1_19_years", "thinness_5_9_years", 
+                                 "Income_composition_of_resources", "Schooling"))
+
+correlations_tbl <- enframe(correlations_named, name = "Variable", value = "Correlation") %>%
+  arrange(desc(Correlation))  # Sort by descending correlation
+
+positive_corr <- correlations_tbl %>% filter(Correlation > 0)
+negative_corr <- correlations_tbl %>% filter(Correlation < 0)
+weak_corr <- correlations_tbl %>% filter(abs(Correlation) < 0.1)
+
+cat("Strongest Positive Correlations with Life Expectancy:\n")
+positive_corr
+
+cat("\nStrongest Negative Correlations with Life Expectancy:\n")
+negative_corr
+
+cat("\nWeak Correlations (Close to 0):\n")
+weak_corr
+
+```
+
+by Status:
+
+```{r}
+developed <- life_exp_clean %>% filter(Status == "Developed")
+developing <- life_exp_clean %>% filter(Status == "Developing")
+
+correlations_dev <- cor(developed[, c("Adult_Mortality", "infant_deaths", "Alcohol", 
+                                      "percentage_expenditure", "Hepatitis_B", "Measles", 
+                                      "BMI", "under_five_deaths", "Polio", "Total_expenditure",                                       "Diphtheria", "HIV/AIDS", "GDP", "Population", 
+                                      "thinness_1_19_years", "thinness_5_9_years", 
+                                      "Income_composition_of_resources", "Schooling")], 
+                       developed$Life_expectancy)
+
+correlations_devp <- cor(developing[, c("Adult_Mortality", "infant_deaths", "Alcohol", 
+                                        "percentage_expenditure", "Hepatitis_B", "Measles", 
+                                        "BMI", "under_five_deaths", "Polio", "Total_expenditure", 
+                                        "Diphtheria", "HIV/AIDS", "GDP", "Population", 
+                                        "thinness_1_19_years", "thinness_5_9_years", 
+                                        "Income_composition_of_resources", "Schooling")], 
+                         developing$Life_expectancy)
+
+correlations_named_dev <- setNames(correlations_dev, 
+                                   c("Adult_Mortality", "infant_deaths", "Alcohol", 
+                                     "percentage_expenditure", "Hepatitis_B", "Measles", 
+                                     "BMI", "under_five_deaths", "Polio", "Total_expenditure", 
+                                     "Diphtheria", "HIV/AIDS", "GDP", "Population", 
+                                     "thinness_1_19_years", "thinness_5_9_years", 
+                                     "Income_composition_of_resources", "Schooling"))
+
+correlations_named_devp <- setNames(correlations_devp, 
+                                    c("Adult_Mortality", "infant_deaths", "Alcohol", 
+                                      "percentage_expenditure", "Hepatitis_B", "Measles", 
+                                      "BMI", "under_five_deaths", "Polio", "Total_expenditure", 
+                                      "Diphtheria", "HIV/AIDS", "GDP", "Population", 
+                                      "thinness_1_19_years", "thinness_5_9_years", 
+                                      "Income_composition_of_resources", "Schooling"))
+
+correlations_tbl_dev <- enframe(correlations_named_dev, name = "Variable", value = "Correlation_Developed") %>%
+  arrange(desc(Correlation_Developed))
+
+correlations_tbl_devp <- enframe(correlations_named_devp, name = "Variable", value = "Correlation_Developing") %>%
+  arrange(desc(Correlation_Developing))
+correlations_tbl_dev
+correlations_tbl_devp
+
+
+correlation_comparison <- left_join(correlations_tbl_dev, correlations_tbl_devp, by = "Variable")
+
+
+
+cat("\n--- Comparison of Correlations with Life Expectancy: Developed vs Developing Countries ---\n")
+print(correlation_comparison)
+
+```
+
+For developed countries, income, percentage expentiure, and GDP showed positive, strong correlation with life expectancy. polio, bmi, diphtheria and under-five-deaths all had a weak correlation with life expectancy with pearson coefficients \~0.
+
+in contrast, developing countries had a strong, positive correlation between life expectancy and schooling, income comp, BMI, GDP, and percentage-expenditure, showing that for developing countries, BMI is still an important factor that plays a role in life expectancy, but that this correlation strength decreases as a country becomes a developed country. interestingly, total-expenditure had a week correlation in developing countries, and various diseases and alcohol had a mildly strong correlation of around 0.2.
+
+therefore:
+
+developing
+
+-   recommend focusing on **education, BMI**
+
+-   **secondary areas of focus include diseases such as diphtheria, polio, alcohol.**
+
+developed
+
+-   less emphasis on diseases such as Polio, BMI, Diphtheria etc.
+
+both
+
+-   income comp, percentage_expenditure, GDP, schooling,
+
+Multiple Linear Reg Models
+
+```{r}
+# Model for developed countries
+model_developed <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
+                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources, 
+                      data = developed)
+
+# Model for developing countries
+model_developing <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
+                         infant_deaths + Polio + Total_expenditure + Diphtheria + 
+                         Income_composition_of_resources, 
+                       data = developing)
+# Summary of the model for developed countries
+summary(model_developed)
+
+# Summary of the model for developing countries
+summary(model_developing)
+```
+
+developed;
+
+-   GDP, BMI, Alcohol, infant deaths, Polio, total exp, diphtheria is not significant
+
+-   Schooling, Adult mortality, diphtheria, income comp significant
+
+developing: GDP, Schooling, BMI, Alcohol, Adult mortality, diphtheria, income comp are all signficant
