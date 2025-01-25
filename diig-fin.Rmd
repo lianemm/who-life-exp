@@ -8,7 +8,7 @@ date: "2025-01-25"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# DIIG Data Challenge 2025: Life Expectancy
+# DIIG Data Challenge 2025: Life Expectancy Dataset
 
 ### Liane Ma
 
@@ -118,11 +118,11 @@ correlations_named <- setNames(correlations,
                                  "Income_composition_of_resources", "Schooling"))
 
 correlations_tbl <- enframe(correlations_named, name = "Variable", value = "Correlation") %>%
-  arrange(desc(Correlation))  # Sort by descending correlation
+  arrange(desc(Correlation))
 
-positive_corr <- correlations_tbl %>% filter(Correlation > 0)
-negative_corr <- correlations_tbl %>% filter(Correlation < 0)
-weak_corr <- correlations_tbl %>% filter(abs(Correlation) < 0.1)
+positive_corr <- correlations_tbl |> filter(Correlation > 0)
+negative_corr <- correlations_tbl |> filter(Correlation < 0)
+weak_corr <- correlations_tbl |> filter(abs(Correlation) < 0.1)
 
 cat("Strongest Positive Correlations with Life Expectancy:\n")
 positive_corr
@@ -138,8 +138,8 @@ weak_corr
 #### Correlation Analysis by country status
 
 ```{r}
-developed <- life_exp_clean %>% filter(Status == "Developed")
-developing <- life_exp_clean %>% filter(Status == "Developing")
+developed <- life_exp_clean |> filter(Status == "Developed")
+developing <- life_exp_clean |> filter(Status == "Developing")
 
 correlations_dev <- cor(developed[, c("Adult_Mortality", "infant_deaths", "Alcohol", 
                                       "percentage_expenditure", "Hepatitis_B", "Measles", 
@@ -281,7 +281,6 @@ developing |>
 ```{r}
 developing$predicted_life_expectancy <- predict(model_dvl_int3, newdata = developing)
 
-library(ggplot2)
 ggplot(developing, aes(x = Alcohol, y = predicted_life_expectancy, color = BMI)) +
   geom_point() + 
   geom_smooth(method = "lm", color = "red") +
