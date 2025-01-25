@@ -1,0 +1,63 @@
+---
+title: "diig-fin"
+output: html_document
+date: "2025-01-25"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# DIIG Data Challenge 2025: Life Expectancy
+
+### Liane Ma
+
+## Data
+
+```{r load data}
+library(tidyverse)
+library(dplyr)
+life_exp <- read_csv("data/Life Expectancy Data.csv")
+
+#cleaning
+colnames(life_exp) <- gsub(" ", "_", colnames(life_exp))
+colnames(life_exp) <- gsub("-", "_", colnames(life_exp))
+colnames(life_exp) <- gsub("__", "_", colnames(life_exp))
+
+life_exp_clean <- na.omit(life_exp)
+```
+
+## Exploratory Data Analysis
+
+```{r}
+life_exp_clean |>
+  ggplot(aes(x = Life_expectancy))+
+  geom_histogram(binwidth = 2) + 
+  labs(
+    title = "Distribution of Life Expectancy",
+    y = "Count",
+    x = "Life Expectancy (years)"
+  )
+```
+
+```{r}
+life_exp_clean |>
+  ggplot(aes(x = Status, y = Life_expectancy)) + 
+  geom_boxplot()
+
+```
+
+```{r}
+life_exp_clean |>
+  ggplot(aes(x = Alcohol, y = Life_expectancy)) + 
+  geom_point(alpha = 0.5) +
+  facet_wrap(~Status)
+```
+
+```{r}
+life_exp_clean |>
+  ggplot(aes(x = percentage_expenditure, y = Life_expectancy)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth() + 
+  facet_wrap(~Status)
+```
