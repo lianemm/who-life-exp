@@ -39,13 +39,19 @@ life_exp_clean |>
     title = "Distribution of Life Expectancy",
     y = "Count",
     x = "Life Expectancy (years)"
-  )
+  ) + 
+  theme_minimal()
 ```
 
 ```{r}
 life_exp_clean |>
   ggplot(aes(x = Status, y = Life_expectancy)) + 
-  geom_boxplot()
+  geom_boxplot() + 
+  labs(
+    title = "Distribution of life expectancy by developed vs. developing country",
+    y = "life expectancy"
+  ) + 
+  theme_minimal()
 
 ```
 
@@ -53,7 +59,13 @@ life_exp_clean |>
 life_exp_clean |>
   ggplot(aes(x = Alcohol, y = Life_expectancy)) + 
   geom_point(alpha = 0.5) +
-  facet_wrap(~Status)
+  facet_wrap(~Status) + 
+  labs(
+    title = "Life Expectancy vs. Alcohol per capita by Country Status", 
+    y = "Life Expectancy",
+    x = "Alcohol per capita consumption (litres)"
+  ) + 
+  theme_minimal()
 ```
 
 ```{r}
@@ -61,12 +73,32 @@ life_exp_clean |>
   ggplot(aes(x = percentage_expenditure, y = Life_expectancy)) +
   geom_point(alpha = 0.5) +
   geom_smooth() + 
-  facet_wrap(~Status)
+  facet_wrap(~Status) + 
+  labs(
+    title = "Life Expectancy vs. Percent of Expenditure on Health", 
+    subtitle = "by country status",
+    y = "Life expectancy",
+    x = "%GDP of Expenditure on Health"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+life_exp_clean |>
+  ggplot(aes(x = Schooling, y = Life_expectancy, color = Status)) +
+  geom_point(alpha = 0.5) +
+  labs(
+    title = "Life Expectancy vs. Schooling", 
+    subtitle = "by country status",
+    y = "Life expectancy",
+    x = "Schooling (years)"
+  ) +
+  theme_minimal()
 ```
 
 ## Methodology
 
-Correlation Analysis:
+#### Correlation Analysis (general)
 
 ```{r}
 correlations <- cor(life_exp_clean[, c("Adult_Mortality", "infant_deaths", "Alcohol", 
@@ -103,7 +135,7 @@ weak_corr
 
 ```
 
-by Status:
+#### Correlation Analysis by country status
 
 ```{r}
 developed <- life_exp_clean %>% filter(Status == "Developed")
@@ -158,57 +190,33 @@ print(correlation_comparison)
 
 ```
 
-For developed countries, income, percentage expentiure, and GDP showed positive, strong correlation with life expectancy. polio, bmi, diphtheria and under-five-deaths all had a weak correlation with life expectancy with pearson coefficients \~0.
+For developed countries, income, percentage expenditure, and GDP showed positive, strong correlation with life expectancy. Polio, BMI, diphtheria and under-five-deaths all had a weak correlation with life expectancy with Pearson coefficients \~0.
 
-in contrast, developing countries had a strong, positive correlation between life expectancy and schooling, income comp, BMI, GDP, and percentage-expenditure, showing that for developing countries, BMI is still an important factor that plays a role in life expectancy, but that this correlation strength decreases as a country becomes a developed country. interestingly, total-expenditure had a week correlation in developing countries, and various diseases and alcohol had a mildly strong correlation of around 0.2.
+in contrast, developing countries had a strong, positive correlation between life expectancy and schooling, income composition index, BMI, GDP, and percentage expenditure, showing that for developing countries, BMI is still an important factor that plays a role in life expectancy, but that this correlation strength decreases as a country becomes a developed country. Percentage of government expenditure on health had a weak correlation with life expectancy in developing countries, likely due to the fact that other factors (poverty, malnutrition, sanitation, etc.) may have a stronger impact on life expectancy, healthcare expenditure may not be evenly distributed across the country, and current government focus is on addressing infectious diseases/emergency healthcare.
 
-therefore:
+Interestingly, total-expenditure had a week correlation in developing countries, and various diseases and alcohol had a mildly strong correlation of around 0.2. Increased years in schooling were strongly associated with higher life expectancy in developing countries, but only moderately so in developed countries.
 
-developing
-
--   recommend focusing on **education, BMI**
-
--   **secondary areas of focus include diseases such as diphtheria, polio, alcohol.**
-
-developed
-
--   less emphasis on diseases such as Polio, BMI, Diphtheria etc.
-
-both
-
--   income comp, percentage_expenditure, GDP, schooling,
-
-Multiple Linear Reg Models
+#### Linear Regression Models by country status
 
 ```{r}
-# Model for developed countries
+#developed
 model_developed <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
                         infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources, 
                       data = developed)
 
-# Model for developing countries
+#developing
 model_developing <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
                          infant_deaths + Polio + Total_expenditure + Diphtheria + 
                          Income_composition_of_resources, 
                        data = developing)
-# Summary of the model for developed countries
+
 summary(model_developed)
 
-# Summary of the model for developing countries
+
 summary(model_developing)
 ```
 
-developed;
-
--   GDP, BMI, Alcohol, infant deaths, Polio, total exp, diphtheria is not significant
-
--   Schooling, Adult mortality, diphtheria, income comp significant
-
-developing: GDP, Schooling, BMI, Alcohol, Adult mortality, diphtheria, income comp are all signficant
-
-Interaction Effects
-
--   GDP and schooling
+#### Testing Interaction Effects of Interest
 
 ```{r}
 model_dev_int <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
@@ -222,9 +230,7 @@ anova(model_developing, model_dvl_int)
 
 ```
 
-interaction effect does not significantly improve model fit in either case; pval \>= 0.05.
-
-incomecomp \*schooling
+Interaction effect of GDP and Schooling does not significantly improve model fit in either model; pval \> 0.05.
 
 ```{r}
 model_dev_int2 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
@@ -238,9 +244,9 @@ anova(model_developing, model_dvl_int2)
 
 ```
 
-interaction effect does not improve model.
+Interaction effect of Income Composition Index and Schooling does not significantly improve model fit in either model; pval \> 0.05.
 
-health and lifestyle: BMI \* Alcohol?
+Interested in lifestyle:
 
 ```{r}
 model_dev_int3 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
@@ -255,35 +261,15 @@ summary(model_developing)$r.squared
 summary(model_dvl_int3)$r.squared
 ```
 
-not significant in developed countries, but interaction is sig in developing countries w a pval of 0.02.
+Interaction effect of BMI and Alcohol does not significantly improve model fit in developed countries, but it is significant in developing countries with a p-value of 0.02, less than the threshold of 0.05.
 
--   this suggests that the relationship between **alcohol consumption** and **BMI** in relation to **life expectancy** might differ between developed and developing countries.
+-   This suggests that the relationship between **alcohol consumption** and **BMI** in relation to **life expectancy** might differ between developed and developing countries.
 
--   r\^2 increased by a bit, indicating better model fit
+-   R\^2 increased minutely, indicating better model fit
 
-\
-GDP, total expenditure
+-   Countries with lower avg BMI experience less negative impact of alcohol consumption on life expectancy, whereas those with higher BMI may experience a greater reduction in life expectancy at similar levels of alcohol consumption.
 
-```{r}
-model_dev_int4 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
-                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + Total_expenditure*Polio, 
-                      data = developed)
-model_dvl_int4 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
-                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + Total_expenditure*Polio, 
-                      data = developing)
-anova(model_developed, model_dev_int4)
-anova(model_developing, model_dvl_int4)
-```
-
-```{r}
-# install.packages("car")
-library(car)
-vif(model_dvl_int3)
-```
-
-None have VIF \> 10, so multicollinearity is not an issue with this model
-
-Alcohol and BMI relationship in developing countries
+**Further exploration of interaction effect:**
 
 ```{r}
 developing |>
@@ -303,3 +289,121 @@ ggplot(developing, aes(x = Alcohol, y = predicted_life_expectancy, color = BMI))
        x = "Alcohol Consumption", y = "Predicted Life Expectancy")
 
 ```
+
+```{r}
+model_dev_int4 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
+                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + Total_expenditure*Polio, 
+                      data = developed)
+model_dvl_int4 <- lm(Life_expectancy ~ GDP + Schooling + BMI + Alcohol + Adult_Mortality + 
+                        infant_deaths + Polio + Total_expenditure + Diphtheria + Income_composition_of_resources + Total_expenditure*Polio, 
+                      data = developing)
+anova(model_developed, model_dev_int4)
+anova(model_developing, model_dvl_int4)
+```
+
+Interaction effect of total expenditure and Polio does not significantly improve model fit in either model; pval \> 0.05.
+
+#### Assessing Final Model (including interaction effect BMI\*Alcohol)
+
+```{r}
+# install.packages("car")
+library(car)
+vif(model_dvl_int3, type = "predictor")
+model_dvl_int3
+```
+
+None have GVIF \> 10, so multicollinearity is not an issue with this model
+
+#### Checking Model Assumptions
+
+Constant Variance assumption satisfied.
+
+```{r}
+
+residuals_dev <- residuals(model_dev_int3)
+fitted_values_dev <- fitted(model_dev_int3)
+
+
+plot(fitted_values_dev, residuals_dev, 
+     xlab = "Fitted Values", 
+     ylab = "Residuals", 
+     main = "Residuals vs Fitted Values for Developed Model")
+abline(h = 0, col = "red")
+
+residuals_dvl <- residuals(model_dvl_int3)
+fitted_values_dvl <- fitted(model_dvl_int3)
+
+
+plot(fitted_values_dvl, residuals_dvl, 
+     xlab = "Fitted Values", 
+     ylab = "Residuals", 
+     main = "Residuals vs Fitted Values for Developing Model")
+abline(h = 0, col = "red")
+```
+
+Normality Assumption satisfied; residuals are normally distributed.
+
+```{r}
+
+hist(residuals_dev, 
+     main = "Histogram of Residuals for Developed Countries", 
+     xlab = "Residuals", 
+     breaks = 20)
+hist(residuals_dvl, 
+     main = "Histogram of Residuals for Developing Countries", 
+     xlab = "Residuals", 
+     breaks = 20)
+```
+
+## Conclusion
+
+Emphasis should be placed on:
+
+1.  **Education Programs:** Better education results in improved public health awareness, lifestyle choices, and access to resources.
+
+-   Investments in education systems with a rural/underserved focus
+
+-   Teacher training programs
+
+-   Collaboration w/ national education ministries
+
+-   Health expenditure monitoring program to fairly distribute resources
+
+2.  **Economic Development:** Investments aimed at economic growth and resource allocation would significantly positively impact life expectancy.
+
+-   Develop Global Income Composition Index and GDP Goals that countries have incentive to meet
+
+-   Promote health-sensitive economic policies, health financing models
+
+-   Support mobilization of resources through taxation policy, international health funding
+
+3.  **Health System Infrastructure:** Strengthening weak correlations between total health expenditure and life expectancy
+
+-   Make sure health spending directly benefits the population through efficient healthcare delivery
+
+-   Address inequalities in health system and target vulnerable populations
+
+-   Supporting disease prevention programs
+
+-   Increasing vaccination support and infectious disease research for diphtheria, polio, etc.
+
+## Limitations
+
+Independence of observations is not met, since there could be interdependence between countries due to geographic proximity, trade relations, shared economic conditions, or regional policies. However, I proceeded with the analysis because:
+
+-   Model was built with control for observable characteristics, or relevant covariates that account for country-specific differences (GDP, population, etc)., reducing risk of bias due to country-specific interdependencies
+
+-   Time period of interest is relatively short, spanning from 2000 to 2015, so temporal autocorrelation (correlation across years within a country) is limited
+
+Additional limitations include omission of NAs from dataset, which may lead to differences in results.
+
+## Future Work
+
+-   **Inclusion of fixed effects** (year-level) in linear regression to control for time-invariant characteristics that could affect the relationship between the variables
+
+```{=html}
+<!-- -->
+```
+-   Comparison between results with NAs and without NAs
+
+-   **Time-Series Analysis** w/ ARIMA to determine if there are any trends over time
